@@ -1,4 +1,7 @@
-# cxr-mvp — Radiology Report Reference Label Engine
+# radiology-ai — Radiology Report Reference Label Engine
+
+**Repository:** https://github.com/Tokyofloripa/radiology-ai
+**Version:** 0.7.0 | **Tests:** 228 | **Python:** 3.11+
 
 ## Mission
 Transform 10K anonymized Portuguese radiology reports into structured reference labels,
@@ -20,6 +23,14 @@ Phase 1: CXR (1,126 unique reports from 6,541 exams). Phase 2: MSK/spine.
 2. **Portuguese-native** — All prompts and NLP rules designed for Brazilian Portuguese reports
 3. **Model-agnostic** — New extraction model = one file implementing `ExtractionBackend`; new vision model = `VisionBackend`
 4. **Auditable** — Run manifests, provenance fields, deterministic synonym maps, evidence spans on every finding
+
+## Git Workflow
+- **Branch:** `main` is the primary branch
+- **Remote:** `origin` → `https://github.com/Tokyofloripa/radiology-ai.git`
+- **Commits:** Conventional commits (`feat:`, `fix:`, `docs:`, `refactor:`, `test:`)
+- **PRs:** Use the PR template (`.github/pull_request_template.md`) — includes test checklist
+- **Issues:** Bug reports and finding requests have templates in `.github/ISSUE_TEMPLATE/`
+- **No data in repo:** CSV, DICOM, output, and .env are all gitignored. Never commit patient data.
 
 ## Architecture
 ```
@@ -157,3 +168,10 @@ PYTHONPATH=src python3 scripts/02_build_ground_truth.py
 - NEVER use "accuracy" alone — sensitivity, specificity, AUROC minimum
 - config/label_mapping.yaml defines which states = abnormal. Never assume in code.
 - Triage priority is deterministic from finding states — but 40 vs 23 CRITICAL (Sonnet vs Opus) shows sensitivity gap.
+
+## Key Documentation
+- `README.md` — Quick start, architecture overview, E2E results
+- `MVP-v7-spec.md` — Full 2,440-line design specification
+- `CONTRIBUTING.md` — Dev workflow, adding findings/backends
+- `SECURITY.md` — Medical data policy, regulatory notice
+- `CLAUDE.md` — This file (AI assistant instructions)
