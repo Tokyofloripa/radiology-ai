@@ -1,0 +1,27 @@
+# Multi-model extraction config.
+# Each model runs the same prompt; only the model differs.
+# Adding a new model: add entry here + provider backend file if new provider.
+
+prompt_template: config/prompts/extract_cxr_pt.txt
+temperature: 0
+max_tokens: 4096
+
+models:
+  - name: sonnet
+    provider: anthropic
+    model_id: claude-sonnet-4-6
+    mode: batch
+    enabled: true
+
+  - name: opus
+    provider: anthropic
+    model_id: claude-opus-4-6
+    mode: batch
+    enabled: true
+
+  # Future — uncomment when provider backend exists:
+  # - name: gpt4o
+  #   provider: openai
+  #   model_id: gpt-4o
+  #   mode: sync
+  #   enabled: false

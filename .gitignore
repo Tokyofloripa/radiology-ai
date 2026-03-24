@@ -1,0 +1,19 @@
+# Medical data — NEVER commit
+data/
+*.dcm
+*.dicom
+
+# Output
+output/
+
+# Python
+.venv/
+__pycache__/
+*.pyc
+frozen-*.txt
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+
+# Secrets
+.env

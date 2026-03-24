@@ -1,0 +1,28 @@
+# How 5-state LabelState maps to binary normal/abnormal for evaluation.
+# This MUST be config, not hardcoded. Different use cases may remap.
+version: "1.0.0"
+
+binary_mapping:
+  # Which LabelStates count as "abnormal" for binary metrics
+  abnormal_states:
+    - Positive
+    - Uncertain    # conservative: uncertain findings treated as abnormal
+
+  # Which LabelStates count as "normal"
+  normal_states:
+    - Negative
+    - Absent
+
+  # Excluded from binary metrics entirely (neither positive nor negative)
+  excluded_states:
+    - Not_Assessable
+
+# Evaluation configuration
+evaluation:
+  # Threshold selection method for optimal operating point
+  threshold_method: youden_j  # youden_j | sensitivity_floor | specificity_floor
+  # Minimum sensitivity constraint (used with sensitivity_floor method)
+  sensitivity_floor: 0.90
+  # Bootstrap CI settings
+  bootstrap_n: 1000
+  bootstrap_ci: 0.95

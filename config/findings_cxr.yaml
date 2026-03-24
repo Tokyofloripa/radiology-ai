@@ -1,0 +1,406 @@
+# CXR Finding Vocabulary v2 — Portuguese + English
+# 40 findings for expanded extraction (Phase 1 CXR + MSK + vascular + devices).
+# Single source of truth: prompt_generator.py reads this to build the extraction prompt.
+version: "2.0.0"
+
+# Canonical categories (used by both Tier 1 and Tier 2):
+# pulmonary, infectious, musculoskeletal, vascular, device, structural, soft_tissue, other
+#
+# Priority tiers: CRITICAL, HIGH, MODERATE, LOW
+# Priority and category are independent — e.g., device_malposition is category=device, priority=CRITICAL.
+
+findings:
+  # === CRITICAL — Life-threatening, immediate alert ===
+  pneumothorax:
+    en: "Pneumothorax"
+    pt: ["pneumotórax"]
+    category: pulmonary
+    priority: CRITICAL
+    tier: 1
+    type: descriptive
+    acuity: acute
+
+  effusion:
+    en: "Pleural Effusion"
+    pt: ["derrame pleural", "líquido pleural", "velamento de seio costofrênico"]
+    category: pulmonary
+    priority: CRITICAL
+    tier: 1
+    type: descriptive
+    acuity: context_dependent
+
+  pneumonia:
+    en: "Pneumonia"
+    pt: ["pneumonia", "processo pneumônico", "broncopneumonia"]
+    category: infectious
+    priority: CRITICAL
+    tier: 1
+    type: etiologic
+    acuity: acute
+
+  consolidation:
+    en: "Consolidation"
+    pt: ["consolidação", "consolidativa"]
+    category: pulmonary
+    priority: CRITICAL
+    tier: 1
+    type: descriptive
+    acuity: acute
+    parent: lung_opacity
+
+  edema:
+    en: "Pulmonary Edema"
+    pt: ["edema pulmonar", "congestão pulmonar", "congestão venosa pulmonar"]
+    category: pulmonary
+    priority: CRITICAL
+    tier: 1
+    type: descriptive
+    acuity: acute
+
+  tuberculosis:
+    en: "Tuberculosis"
+    pt: ["tuberculose", "TB", "cavitação", "padrão miliar", "complexo primário"]
+    category: infectious
+    priority: CRITICAL
+    tier: 1
+    type: etiologic
+    acuity: acute
+
+  device_malposition:
+    en: "Device Malposition"
+    pt: ["sonda mal posicionada", "TOT em posição inadequada", "cateter fora de posição", "mal posicionado"]
+    category: device
+    priority: CRITICAL
+    tier: 1
+    type: device_position
+    acuity: acute
+
+  # === HIGH — Clinically significant, prioritize reading ===
+  cardiomegaly:
+    en: "Cardiomegaly"
+    pt: ["cardiomegalia", "aumento da área cardíaca", "área cardíaca aumentada"]
+    category: pulmonary
+    priority: HIGH
+    tier: 1
+    type: descriptive
+    acuity: context_dependent
+
+  mass:
+    en: "Mass"
+    pt: ["massa", "massa pulmonar", "lesão expansiva"]
+    category: pulmonary
+    priority: HIGH
+    tier: 1
+    type: descriptive
+    acuity: context_dependent
+
+  nodule:
+    en: "Nodule"
+    pt: ["nódulo", "nódulo pulmonar", "micronódulo"]
+    category: pulmonary
+    priority: HIGH
+    tier: 1
+    type: descriptive
+    acuity: context_dependent
+
+  atelectasis:
+    en: "Atelectasis"
+    pt: ["atelectasia", "atelectásica"]
+    category: pulmonary
+    priority: HIGH
+    tier: 1
+    type: descriptive
+    acuity: context_dependent
+
+  lung_lesion:
+    en: "Lung Lesion"
+    pt: ["lesão pulmonar", "lesão parenquimatosa"]
+    category: pulmonary
+    priority: HIGH
+    tier: 1
+    type: descriptive
+    acuity: context_dependent
+
+  aortic_aneurysm:
+    en: "Aortic Aneurysm"
+    pt: ["aneurisma de aorta", "dilatação aneurismática"]
+    category: vascular
+    priority: HIGH
+    tier: 1
+    type: descriptive
+    acuity: context_dependent
+
+  mediastinal_shift:
+    en: "Mediastinal Shift"
+    pt: ["desvio mediastinal", "desvio de traqueia"]
+    category: structural
+    priority: HIGH
+    tier: 1
+    type: descriptive
+    acuity: acute
+
+  pulmonary_hypertension:
+    en: "Pulmonary Hypertension"
+    pt: ["hipertensão pulmonar", "artéria pulmonar dilatada", "tronco pulmonar proeminente"]
+    category: vascular
+    priority: HIGH
+    tier: 1
+    type: descriptive
+    acuity: context_dependent
+
+  # === MODERATE — Important, standard reporting ===
+  lung_opacity:
+    en: "Lung Opacity"
+    pt: ["opacidade pulmonar", "opacidade", "velamento"]
+    category: pulmonary
+    priority: MODERATE
+    tier: 1
+    type: descriptive
+    acuity: context_dependent
+
+  infiltration:
+    en: "Infiltration"
+    pt: ["infiltrado", "opacidade alveolar"]
+    category: pulmonary
+    priority: MODERATE
+    tier: 1
+    type: descriptive
+    acuity: context_dependent
+    parent: lung_opacity
+
+  enlarged_cardiomediastinum:
+    en: "Enlarged Cardiomediastinum"
+    pt: ["alargamento mediastinal", "mediastino alargado"]
+    category: structural
+    priority: MODERATE
+    tier: 1
+    type: descriptive
+    acuity: context_dependent
+
+  pleural_thickening:
+    en: "Pleural Thickening"
+    pt: ["espessamento pleural", "paquipleuris"]
+    category: pulmonary
+    priority: MODERATE
+    tier: 1
+    type: descriptive
+    acuity: chronic
+
+  fracture:
+    en: "Fracture"
+    pt: ["fratura", "traço de fratura", "fratura costal"]
+    category: musculoskeletal
+    priority: MODERATE
+    tier: 1
+    type: descriptive
+    acuity: context_dependent
+
+  vascular_congestion:
+    en: "Vascular Congestion"
+    pt: ["congestão venosa", "redistribuição de fluxo", "cefalização de fluxo"]
+    category: vascular
+    priority: MODERATE
+    tier: 1
+    type: descriptive
+    acuity: acute
+
+  diaphragm_elevation:
+    en: "Diaphragm Elevation"
+    pt: ["elevação diafragmática", "hemidiafragma elevado", "cúpula diafragmática elevada"]
+    category: structural
+    priority: MODERATE
+    tier: 1
+    type: descriptive
+    acuity: context_dependent
+
+  subcutaneous_emphysema:
+    en: "Subcutaneous Emphysema"
+    pt: ["enfisema subcutâneo", "enfisema de partes moles"]
+    category: soft_tissue
+    priority: MODERATE
+    tier: 1
+    type: descriptive
+    acuity: acute
+
+  # === LOW — Chronic/incidental, population health value ===
+  emphysema:
+    en: "Emphysema"
+    pt: ["enfisema", "hiperinsuflação pulmonar", "rebaixamento diafragmático"]
+    category: pulmonary
+    priority: LOW
+    tier: 1
+    type: descriptive
+    acuity: chronic
+
+  fibrosis:
+    en: "Fibrosis"
+    pt: ["fibrose", "fibrótica", "estrias fibróticas"]
+    category: pulmonary
+    priority: LOW
+    tier: 1
+    type: descriptive
+    acuity: chronic
+
+  hernia:
+    en: "Hernia"
+    pt: ["hérnia", "hérnia hiatal", "hérnia diafragmática"]
+    category: structural
+    priority: LOW
+    tier: 1
+    type: descriptive
+    acuity: chronic
+
+  spondylosis:
+    en: "Spondylosis"
+    pt: ["espondilose", "espondiloartrose", "artrose dorsal", "alterações degenerativas vertebrais"]
+    category: musculoskeletal
+    priority: LOW
+    tier: 1
+    type: descriptive
+    acuity: chronic
+
+  aortic_atherosclerosis:
+    en: "Aortic Atherosclerosis"
+    pt: ["aorta ateromatosa", "ateromatose aórtica", "calcificação aórtica"]
+    category: vascular
+    priority: LOW
+    tier: 1
+    type: descriptive
+    acuity: chronic
+
+  aortic_elongation:
+    en: "Aortic Elongation"
+    pt: ["aorta alongada", "ectasia aórtica", "aorta tortuosa"]
+    category: vascular
+    priority: LOW
+    tier: 1
+    type: descriptive
+    acuity: chronic
+
+  osteoporosis:
+    en: "Osteoporosis"
+    pt: ["osteoporose", "osteopenia", "rarefação óssea"]
+    category: musculoskeletal
+    priority: LOW
+    tier: 1
+    type: descriptive
+    acuity: chronic
+
+  scoliosis:
+    en: "Scoliosis"
+    pt: ["escoliose", "desvio do eixo vertebral", "desvio lateral da coluna"]
+    category: musculoskeletal
+    priority: LOW
+    tier: 1
+    type: descriptive
+    acuity: chronic
+
+  vertebral_compression:
+    en: "Vertebral Compression"
+    pt: ["achatamento vertebral", "fratura por compressão vertebral"]
+    category: musculoskeletal
+    priority: LOW
+    tier: 1
+    type: descriptive
+    acuity: context_dependent
+
+  rib_anomaly:
+    en: "Rib Anomaly"
+    pt: ["calo ósseo costal", "costela cervical", "fratura costal consolidada"]
+    category: musculoskeletal
+    priority: LOW
+    tier: 1
+    type: descriptive
+    acuity: incidental
+
+  calcified_granuloma:
+    en: "Calcified Granuloma"
+    pt: ["granuloma calcificado", "calcificação residual", "sequela granulomatosa"]
+    category: pulmonary
+    priority: LOW
+    tier: 1
+    type: descriptive
+    acuity: incidental
+
+  # === DEVICES — Present/absent tracking ===
+  # "Positive" = device present. "Negative" = noted as absent/removed. "Absent" = not mentioned.
+  # Malposition captured via device_malposition (CRITICAL) as a separate finding.
+  endotracheal_tube:
+    en: "Endotracheal Tube"
+    pt: ["tubo orotraqueal", "TOT", "cânula traqueal"]
+    category: device
+    priority: MODERATE
+    tier: 1
+    type: device_presence
+    acuity: context_dependent
+
+  central_line:
+    en: "Central Line"
+    pt: ["cateter venoso central", "CVC", "PICC", "cateter de duplo lúmen"]
+    category: device
+    priority: MODERATE
+    tier: 1
+    type: device_presence
+    acuity: context_dependent
+
+  feeding_tube:
+    en: "Feeding Tube"
+    pt: ["sonda nasoentérica", "SNE", "sonda nasogástrica", "SNG", "sonda digestiva"]
+    category: device
+    priority: MODERATE
+    tier: 1
+    type: device_presence
+    acuity: context_dependent
+
+  chest_drain:
+    en: "Chest Drain"
+    pt: ["dreno de tórax", "dreno torácico", "dreno pleural"]
+    category: device
+    priority: MODERATE
+    tier: 1
+    type: device_presence
+    acuity: context_dependent
+
+  cardiac_device:
+    en: "Cardiac Device"
+    pt: ["marcapasso", "CDI", "desfibrilador", "eletrodos", "fios de esterno", "prótese valvar"]
+    category: device
+    priority: MODERATE
+    tier: 1
+    type: device_presence
+    acuity: context_dependent
+
+  surgical_hardware:
+    en: "Surgical Hardware"
+    pt: ["material de síntese", "placa", "parafuso", "hastes", "fixação interna"]
+    category: device
+    priority: LOW
+    tier: 1
+    type: device_presence
+    acuity: incidental
+
+# === Study quality flags (valid values for study_quality_flags) ===
+study_quality_flags:
+  - bedside        # estudo no leito
+  - rotation       # rotacionado
+  - hyperinflation # hipoinsuflação/expiração
+  - underexposure  # penetração inadequada
+  - overexposure   # hiperpenetrado
+  - motion         # borramento por movimento
+  - incomplete     # laudo incompleto ou ilegível
+
+# === Discovery configuration ===
+discovery:
+  promotion_threshold: 0.02    # 2% for pilot (1,126 reports); drop to 0.005 at scale
+  min_absolute_count: 10       # at least 10 occurrences regardless of percentage
+
+# === Category taxonomy (canonical list) ===
+categories:
+  - pulmonary
+  - infectious
+  - musculoskeletal
+  - vascular
+  - device
+  - structural
+  - soft_tissue
+  - other

@@ -1,0 +1,22 @@
+# Tier 2 synonym map — canonical name → list of known aliases
+# Applied BEFORE word-stem dedup (which handles unknown pairs as fallback)
+# To add a new mapping: add the canonical name as key, aliases as list
+synonyms:
+  diaphragm_convexity:
+    - convex_diaphragm
+    - dome_diaphragm
+    - diaphragm_dome
+  hilar_prominence:
+    - hilar_enlargement
+    - enlarged_hilum
+    - prominent_hilum
+    - hilar_congestion
+  bronchial_wall_thickening:
+    - peribronchial_thickening
+    - bronchial_thickening
+  pericardial_effusion:
+    - pericardial_fluid
+  hilar_adenopathy:
+    - hilar_lymphadenopathy
+    - mediastinal_adenopathy
+    - lymphadenopathy

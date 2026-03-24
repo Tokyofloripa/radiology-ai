@@ -1,0 +1,38 @@
+[project]
+name = "cxr-mvp"
+version = "0.7.0"
+description = "Radiology report reference label engine for Brazilian telemedicine CXR"
+requires-python = ">=3.11"
+dependencies = [
+    "pydantic>=2.0",
+    "pyyaml>=6.0",
+    "anthropic>=0.30",
+    "numpy>=1.24",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=9.0",
+    "ruff>=0.4",
+    "mypy>=1.10",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
+markers = [
+    "slow: tests that take >2s (DICOM loading, model inference)",
+    "integration: tests that hit external APIs (Anthropic, GCP, OpenAI)",
+]
+
+[tool.ruff]
+target-version = "py311"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP"]
+
+[tool.mypy]
+python_version = "3.11"
+warn_return_any = true
+warn_unused_configs = true

@@ -1,0 +1,164 @@
+Você é um mecanismo de extração de dados de laudos radiológicos. Analise o laudo de radiografia de tórax abaixo e extraia informações estruturadas.
+
+IMPORTANTE: Ignore seções de TÉCNICA e INDICAÇÃO. Extraia achados apenas das seções de ACHADOS e IMPRESSÃO.
+
+LAUDO:
+{REPORT_TEXT}
+
+TAREFA: Extraia as seguintes informações do laudo acima.
+
+1. CLASSIFICAÇÃO GERAL: Classifique o exame como "normal" ou "abnormal".
+   - "normal" = laudo indica exame sem alterações significativas
+   - "abnormal" = laudo indica qualquer achado patológico (incluindo dispositivos, achados incidentais, alterações degenerativas)
+
+2. ACHADOS ESPECÍFICOS: Para CADA um dos 40 achados abaixo, forneça:
+   - "status": exatamente um de "Positive", "Negative", "Uncertain", "Absent", "Not_Assessable"
+   - "confidence": "high", "medium" ou "low"
+   - "evidence": a frase exata do laudo que sustenta sua classificação (null se Absent)
+
+ACHADOS PARA CLASSIFICAR:
+aortic_aneurysm, aortic_atherosclerosis, aortic_elongation, atelectasis, calcified_granuloma, cardiac_device, cardiomegaly, central_line, chest_drain, consolidation, device_malposition, diaphragm_elevation, edema, effusion, emphysema, endotracheal_tube, enlarged_cardiomediastinum, feeding_tube, fibrosis, fracture, hernia, infiltration, lung_lesion, lung_opacity, mass, mediastinal_shift, nodule, osteoporosis, pleural_thickening, pneumonia, pneumothorax, pulmonary_hypertension, rib_anomaly, scoliosis, spondylosis, subcutaneous_emphysema, surgical_hardware, tuberculosis, vascular_congestion, vertebral_compression
+
+DICAS DE TERMOS EM PORTUGUÊS:
+
+DEVICE:
+- cardiac_device: marcapasso, CDI, desfibrilador, eletrodos, fios de esterno, prótese valvar
+- central_line: cateter venoso central, CVC, PICC, cateter de duplo lúmen
+- chest_drain: dreno de tórax, dreno torácico, dreno pleural
+- device_malposition: sonda mal posicionada, TOT em posição inadequada, cateter fora de posição, mal posicionado
+- endotracheal_tube: tubo orotraqueal, TOT, cânula traqueal
+- feeding_tube: sonda nasoentérica, SNE, sonda nasogástrica, SNG, sonda digestiva
+- surgical_hardware: material de síntese, placa, parafuso, hastes, fixação interna
+
+INFECTIOUS:
+- pneumonia: pneumonia, processo pneumônico, broncopneumonia
+- tuberculosis: tuberculose, TB, cavitação, padrão miliar, complexo primário
+
+MUSCULOSKELETAL:
+- fracture: fratura, traço de fratura, fratura costal
+- osteoporosis: osteoporose, osteopenia, rarefação óssea
+- rib_anomaly: calo ósseo costal, costela cervical, fratura costal consolidada
+- scoliosis: escoliose, desvio do eixo vertebral, desvio lateral da coluna
+- spondylosis: espondilose, espondiloartrose, artrose dorsal, alterações degenerativas vertebrais
+- vertebral_compression: achatamento vertebral, fratura por compressão vertebral
+
+PULMONARY:
+- atelectasis: atelectasia, atelectásica
+- calcified_granuloma: granuloma calcificado, calcificação residual, sequela granulomatosa
+- cardiomegaly: cardiomegalia, aumento da área cardíaca, área cardíaca aumentada
+- consolidation: consolidação, consolidativa
+- edema: edema pulmonar, congestão pulmonar, congestão venosa pulmonar
+- effusion: derrame pleural, líquido pleural, velamento de seio costofrênico
+- emphysema: enfisema, hiperinsuflação pulmonar, rebaixamento diafragmático
+- fibrosis: fibrose, fibrótica, estrias fibróticas
+- infiltration: infiltrado, opacidade alveolar
+- lung_lesion: lesão pulmonar, lesão parenquimatosa
+- lung_opacity: opacidade pulmonar, opacidade, velamento
+- mass: massa, massa pulmonar, lesão expansiva
+- nodule: nódulo, nódulo pulmonar, micronódulo
+- pleural_thickening: espessamento pleural, paquipleuris
+- pneumothorax: pneumotórax
+
+SOFT_TISSUE:
+- subcutaneous_emphysema: enfisema subcutâneo, enfisema de partes moles
+
+STRUCTURAL:
+- diaphragm_elevation: elevação diafragmática, hemidiafragma elevado, cúpula diafragmática elevada
+- enlarged_cardiomediastinum: alargamento mediastinal, mediastino alargado
+- hernia: hérnia, hérnia hiatal, hérnia diafragmática
+- mediastinal_shift: desvio mediastinal, desvio de traqueia
+
+VASCULAR:
+- aortic_aneurysm: aneurisma de aorta, dilatação aneurismática
+- aortic_atherosclerosis: aorta ateromatosa, ateromatose aórtica, calcificação aórtica
+- aortic_elongation: aorta alongada, ectasia aórtica, aorta tortuosa
+- pulmonary_hypertension: hipertensão pulmonar, artéria pulmonar dilatada, tronco pulmonar proeminente
+- vascular_congestion: congestão venosa, redistribuição de fluxo, cefalização de fluxo
+
+DISPOSITIVOS MÉDICOS:
+- Para dispositivos (endotracheal_tube, central_line, feeding_tube, chest_drain, cardiac_device, surgical_hardware): "Positive" = dispositivo presente, "Negative" = explicitamente ausente/removido, "Absent" = não mencionado.
+- Se um dispositivo está MAL POSICIONADO, marque device_malposition como "Positive" além do dispositivo específico.
+
+REGRAS:
+- "Positive" = achado explicitamente descrito como presente
+- "Negative" = achado explicitamente negado ("sem", "ausência de", "dentro dos limites")
+- "Uncertain" = linguagem duvidosa ("não se pode excluir", "possível", "a esclarecer", "discreto")
+- "Absent" = achado não mencionado no laudo
+- "Not_Assessable" = avaliação prejudicada (estudo no leito, hipoinsuflação, laudo incompleto)
+
+IMPORTANTE:
+- Use EXATAMENTE os nomes dos achados listados acima como chaves.
+- O campo "evidence" deve ser a citação EXATA do laudo em português.
+- "Pulmões limpos" ou "sem alterações" implica Negative para achados pulmonares.
+- Se o laudo diz "normal" sem detalhar, classifique todos como Negative.
+
+3. QUALIDADE DO ESTUDO: Avalie a qualidade técnica do exame.
+   - "study_quality": "adequate" ou "suboptimal"
+   - "study_quality_flags": lista de problemas (vazio se adequado)
+   Problemas possíveis: "bedside", "rotation", "hyperinflation", "underexposure", "overexposure", "motion", "incomplete"
+   Se o laudo não mencionar limitações técnicas, assuma "adequate" com lista vazia.
+   Se marcar "suboptimal", inclua pelo menos um flag na lista.
+
+4. ACHADOS ADICIONAIS: Se o laudo descrever algum achado ANORMAL ou PATOLÓGICO que NÃO se encaixe nos 40 achados acima, liste-os em "other_findings". Para cada:
+   - "name": termo médico CURTO e canônico em inglês (snake_case, máximo 2-3 palavras). Exemplos corretos: "bronchiectasis", "pericardial_effusion", "hilar_adenopathy". Exemplos INCORRETOS: "bilateral_cylindrical_bronchiectasis_in_lower_lobes", "peribronchiovascular_markings_accentuation"
+   - "original_term": o termo exato em português do laudo
+   - "status": Positive, Negative, Uncertain
+   - "confidence": high, medium, low
+   - "evidence": citação exata do laudo
+   - "suggested_category": uma de: pulmonary, infectious, musculoskeletal, vascular, device, structural, soft_tissue, other
+   IMPORTANTE para other_findings:
+   - NÃO reporte achados já cobertos pelos 40 achados listados acima (ex: se "velamento de seio costofrênico" classifique em effusion, não como other_finding)
+   - NÃO reporte descrições de anatomia NORMAL (ex: "hilos de aspecto normal", "mediastino de contornos preservados" NÃO são achados)
+   - Apenas achados ANORMAIS/PATOLÓGICOS não cobertos pela lista principal
+   Se não houver achados adicionais, retorne "other_findings": []
+
+Responda APENAS com JSON válido no formato abaixo. Sem explicações, sem markdown.
+
+{
+  "classification": "normal",
+  "findings": {
+    "aortic_aneurysm": {"status": "Absent", "confidence": "high", "evidence": null},
+    "aortic_atherosclerosis": {"status": "Absent", "confidence": "high", "evidence": null},
+    "aortic_elongation": {"status": "Absent", "confidence": "high", "evidence": null},
+    "atelectasis": {"status": "Absent", "confidence": "high", "evidence": null},
+    "calcified_granuloma": {"status": "Absent", "confidence": "high", "evidence": null},
+    "cardiac_device": {"status": "Absent", "confidence": "high", "evidence": null},
+    "cardiomegaly": {"status": "Absent", "confidence": "high", "evidence": null},
+    "central_line": {"status": "Absent", "confidence": "high", "evidence": null},
+    "chest_drain": {"status": "Absent", "confidence": "high", "evidence": null},
+    "consolidation": {"status": "Absent", "confidence": "high", "evidence": null},
+    "device_malposition": {"status": "Absent", "confidence": "high", "evidence": null},
+    "diaphragm_elevation": {"status": "Absent", "confidence": "high", "evidence": null},
+    "edema": {"status": "Absent", "confidence": "high", "evidence": null},
+    "effusion": {"status": "Absent", "confidence": "high", "evidence": null},
+    "emphysema": {"status": "Absent", "confidence": "high", "evidence": null},
+    "endotracheal_tube": {"status": "Absent", "confidence": "high", "evidence": null},
+    "enlarged_cardiomediastinum": {"status": "Absent", "confidence": "high", "evidence": null},
+    "feeding_tube": {"status": "Absent", "confidence": "high", "evidence": null},
+    "fibrosis": {"status": "Absent", "confidence": "high", "evidence": null},
+    "fracture": {"status": "Absent", "confidence": "high", "evidence": null},
+    "hernia": {"status": "Absent", "confidence": "high", "evidence": null},
+    "infiltration": {"status": "Absent", "confidence": "high", "evidence": null},
+    "lung_lesion": {"status": "Absent", "confidence": "high", "evidence": null},
+    "lung_opacity": {"status": "Absent", "confidence": "high", "evidence": null},
+    "mass": {"status": "Absent", "confidence": "high", "evidence": null},
+    "mediastinal_shift": {"status": "Absent", "confidence": "high", "evidence": null},
+    "nodule": {"status": "Absent", "confidence": "high", "evidence": null},
+    "osteoporosis": {"status": "Absent", "confidence": "high", "evidence": null},
+    "pleural_thickening": {"status": "Absent", "confidence": "high", "evidence": null},
+    "pneumonia": {"status": "Absent", "confidence": "high", "evidence": null},
+    "pneumothorax": {"status": "Absent", "confidence": "high", "evidence": null},
+    "pulmonary_hypertension": {"status": "Absent", "confidence": "high", "evidence": null},
+    "rib_anomaly": {"status": "Absent", "confidence": "high", "evidence": null},
+    "scoliosis": {"status": "Absent", "confidence": "high", "evidence": null},
+    "spondylosis": {"status": "Absent", "confidence": "high", "evidence": null},
+    "subcutaneous_emphysema": {"status": "Absent", "confidence": "high", "evidence": null},
+    "surgical_hardware": {"status": "Absent", "confidence": "high", "evidence": null},
+    "tuberculosis": {"status": "Absent", "confidence": "high", "evidence": null},
+    "vascular_congestion": {"status": "Absent", "confidence": "high", "evidence": null},
+    "vertebral_compression": {"status": "Absent", "confidence": "high", "evidence": null}
+  },
+  "other_findings": [],
+  "study_quality": "adequate",
+  "study_quality_flags": []
+}
