@@ -2407,15 +2407,156 @@ Identified key gaps from v6 that led to v7 improvements:
 | Etiologic findings treated same as descriptive | Calibrated arbitration rules in comparison.py |
 | No ontology versioning or audit trail | Run manifests, provenance fields, deterministic synonym maps |
 
-### Round 2 (Final Review)
+### Round 2 (Final Review — after 100-report dual-model E2E)
 
-Status: **Ready for controlled 1,126-report run with human adjudication subset.**
+All 4 models agreed: **engineering is production-grade, methodology needs human validation layer.**
 
-Remaining recommendations for post-MVP:
-- Adjudicate 200-case subset with radiologist to validate silver standard
-- Add more hierarchy relationships as ontology expands
-- Consider per-institution prompt tuning (96 customers with varying report styles)
-- Implement batch mode (submit/status/download) for cost savings at scale
+Key findings:
+- 100% classification agreement is strong but not sufficient — 91% finding agreement means 9% of findings differ
+- 74% auto-arbitration is good — 26% (95 disagreements) need human review
+- pneumonia 100% Uncertain is clinically correct (etiologic diagnosis, radiologists hedge) — not a bug
+- Sonnet 40 CRITICAL vs Opus 23 CRITICAL is a sensitivity gap, not an error — triage is deterministic from findings, but models extract differently
+- `lung_opacity` at 74% agreement is the hardest finding — ontology overlap with consolidation/infiltration
+
+**Verdict:** Ready for controlled 1,126-report run. Human adjudication subset required before any clinical claims.
+
+---
+
+## Current Status (as of 2026-03-24)
+
+### What Is DONE (implemented, tested, E2E validated)
+
+| Component | Status | Evidence |
+|-----------|--------|----------|
+| CSV ingestion + SHA-256 dedup | Done | 6,541 exams → 1,126 unique reports |
+| 40-finding ontology with metadata | Done | type/acuity/hierarchy in YAML |
+| Config-driven prompt generation | Done | Auto-generated from YAML, hash-tracked |
+| Async concurrent extraction | Done | 20 concurrent Sonnet, 5 concurrent Opus |
+| Retry with exponential backoff | Done | 3 retries, handles 429 rate limits |
+| Post-extraction validation (6 rules) | Done | 26% review rate on 100 reports |
+| Acute vs chronic classification | Done | 17% of abnormals are chronic-only |
+| Portuguese NLP rule checks | Done | Negation/hedging/chronicity detection |
+| Tier 2 discovery with synonym dedup | Done | 13 unique findings from 100 reports |
+| Inter-model comparison | Done | 100% classification, 91% finding agreement |
+| Hierarchical agreement roll-up | Done | Child Positive covers parent |
+| Calibrated arbitration | Done | 74% auto-resolved |
+| Named label maps | Done | strict, broad, parenchymal_opacity |
+| Run manifests + provenance | Done | Frozen versions per run |
+| dataclasses.asdict serialization | Done | Auto-adapts to new fields |
+| Centralized get_finding_status | Done | Single utility, no duplication |
+| GitHub repo with best practices | Done | github.com/Tokyofloripa/radiology-ai |
+| 228 tests | Done | 0.5s runtime |
+
+### What Is NOT Done (next steps)
+
+| Component | Priority | Owner | Notes |
+|-----------|----------|-------|-------|
+| **Production run (1,126 reports)** | P0 — do first | Code | Run both models, ~$5, ~1 hour |
+| **Human adjudication subset** | P0 — do after run | Human | 200 stratified reports, 1-2 radiologists |
+| **Cohen's kappa / Gwet's AC1** | P1 | Code | Per-finding with 95% CI, subgroup analysis |
+| **Test-retest reliability** | P1 | Code | Same 50 reports twice, measure LLM stochasticity |
+| **Prevalence reporting (3 views)** | P1 | Code | strict / broad / acute-only |
+| **Formal adjudication queue** | P2 | Code+Human | ReviewCase dataclass, reviewer workflow |
+| **Vision model backends (Stage 3)** | P2 | Code | TorchXRayVision or GPT Vision first |
+| **DICOM preprocessing** | P2 | Code | image_utils.py: windowing, MONOCHROME1 |
+| **Evaluation framework (Stage 4)** | P2 | Code | Confusion matrix, AUROC, AUPRC |
+| **ANVISA documentation** | P3 | Human | Intended use, risk management, data lineage |
+| **LGPD data flow diagrams** | P3 | Human | De-identification, DPA with LLM providers |
+| **Batch API mode** | P3 | Code | Submit/poll/download for 50% cost savings |
+| **Per-institution analysis** | P3 | Code+Human | 96 customers may have varying report styles |
+
+---
+
+## Next Session Playbook
+
+### Step 1: Production Run (~1 hour)
+
+```bash
+cd radiology-ai  # or wherever the repo is cloned
+source .venv/bin/activate
+export $(grep -v '^#' .env | xargs)
+
+# Generate prompt (ensure latest config)
+PYTHONPATH=src python3 scripts/00b_generate_prompt.py
+
+# Sonnet — fast, concurrency 20
+PYTHONPATH=src python3 scripts/01_extract_labels.py run \
+    --models sonnet --concurrency 20
+
+# Opus — slower, concurrency 5 (30K TPM rate limit)
+PYTHONPATH=src python3 scripts/01_extract_labels.py run \
+    --models opus --concurrency 5
+
+# Validate both
+PYTHONPATH=src python3 scripts/01a_validate_extractions.py
+
+# Compare Sonnet vs Opus
+PYTHONPATH=src python3 scripts/01b_compare_extractions.py
+
+# Discovery report
+PYTHONPATH=src python3 scripts/01c_discovery_report.py --total-reports 1126
+
+# Build reference labels
+PYTHONPATH=src python3 scripts/02_build_ground_truth.py
+```
+
+**Expected outputs:**
+- `output/reference_labels/extractions_sonnet.jsonl` (1,126 records)
+- `output/reference_labels/extractions_opus.jsonl` (1,126 records)
+- `output/reference_labels/agreement_report.json` (expect ~91% finding agreement)
+- `output/reference_labels/needs_review.jsonl` (expect ~293 reports at 26% rate)
+- `output/reference_labels/discovery_report.json` (Tier 2 candidates)
+- `output/reference_labels/balanced.csv` (THE evaluation asset)
+- `output/reference_labels/run_manifest.json` (frozen versions)
+
+### Step 2: Analyze Results
+
+```bash
+# Quick analysis
+PYTHONPATH=src python3 -c "
+import json
+from collections import Counter
+
+with open('output/reference_labels/agreement_report.json') as f:
+    report = json.load(f)
+print(f'Classification agreement: {report[\"classification_agreement_rate\"]*100:.0f}%')
+print(f'Mean finding agreement: {report[\"mean_finding_agreement\"]*100:.1f}%')
+print(f'Disagreement reports: {report[\"n_any_disagreement\"]}/{report[\"n_unique_reports\"]}')
+
+# Per-finding agreement (lowest)
+rates = sorted(report['per_finding_agreement_rate'].items(), key=lambda x: x[1])
+print('\\nLowest agreement findings:')
+for name, rate in rates[:10]:
+    print(f'  {name:30s} {rate*100:.1f}%')
+"
+```
+
+### Step 3: Statistical Framework (code — P1)
+
+Build `src/cxr_mvp/agreement_metrics.py`:
+- Cohen's kappa per finding (2 models)
+- Gwet's AC1 for imbalanced labels
+- 95% Wilson confidence intervals
+- Subgroup analysis: suboptimal vs adequate, ICU vs routine
+- 3 prevalence views: strict (Positive only), broad (+Uncertain), acute-only
+
+### Step 4: Human Adjudication (human-orchestrated — P0)
+
+Design the review protocol:
+1. Export stratified review set (all flagged + random clean sample)
+2. Build a simple review interface (even a spreadsheet works)
+3. Radiologist reviews extractions against original report text
+4. Compute: per-finding sensitivity/specificity/kappa vs human labels
+5. Identify systematic LLM errors (false negation, over-hedging, etc.)
+
+### Step 5: Vision Model Bakeoff (code — P2)
+
+After reference labels are validated:
+1. Implement `src/cxr_mvp/backends/torchxrayvision.py` (or GPT Vision)
+2. Implement `src/cxr_mvp/image_utils.py` (DICOM preprocessing)
+3. Implement `src/cxr_mvp/evaluation.py` (metrics + plots)
+4. Run `scripts/03_run_models.py` on balanced set
+5. Run `scripts/04_evaluate.py` → comparison table
 
 ---
 
