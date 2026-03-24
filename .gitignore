@@ -2,18 +2,44 @@
 data/
 *.dcm
 *.dicom
+*.csv
 
-# Output
+# Output artifacts
 output/
 
 # Python
 .venv/
 __pycache__/
 *.pyc
-frozen-*.txt
+*.pyo
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# Type checking / linting
 .mypy_cache/
 .ruff_cache/
 .pytest_cache/
 
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
 # Secrets
 .env
+*.key
+*.pem
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Worktrees
+.worktrees/
